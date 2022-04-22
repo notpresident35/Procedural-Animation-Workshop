@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class RobotBehavior : MonoBehaviour
 {
+    public bool FollowMouse = true;
+
     public float MoveSpeed;
     public float RotDamping;
     public float FollowDist;
@@ -15,11 +17,15 @@ public class RobotBehavior : MonoBehaviour
 
     void Update() {
 
-        float distance;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (plane.Raycast(ray, out distance))
-        {
-            mouseGizmo.position = ray.GetPoint(distance);
+        if (FollowMouse){
+            float distance;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (plane.Raycast(ray, out distance))
+            {
+                mouseGizmo.position = ray.GetPoint(distance);
+            }
+        } else {
+            mouseGizmo.position = transform.position + transform.forward * 10;
         }
 
         float dist = (transform.position - mouseGizmo.position).magnitude;

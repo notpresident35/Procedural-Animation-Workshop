@@ -2,35 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Cubic
-{
-    public static float In(float k)
-    {
-        return k * k * k;
-    }
-
-    public static float Out(float k)
-    {
-        return 1f + ((k -= 1f) * k * k);
-    }
-
-    public static float InOut(float k)
-    {
-        if ((k *= 2f) < 1f) return 0.5f * k * k * k;
-        return 0.5f * ((k -= 2f) * k * k + 2f);
-    }
-}
-
-public class Leg : MonoBehaviour
+public class LegFinished : MonoBehaviour
 {
     public float StepDist;
     public float StepSpeed;
     public Transform SuggestedTarget;
     public DitzelGames.FastIK.FastIKFabric IK;
-    public Leg OppositeLeg;
+    public LegFinished OppositeLeg;
 
     Vector3 prevPos;
     Quaternion prevRot;
+    [HideInInspector]
     public float stepInterpolator = 1;
 
     private void Start()
@@ -42,10 +24,10 @@ public class Leg : MonoBehaviour
 
     private void Update()
     {
-        // Update interpolator with time
+        // Update interpolator
         stepInterpolator = Mathf.Clamp01(stepInterpolator + Time.deltaTime * StepSpeed);
 
-        // Move suggested target up if objects are detected
+        // Raycast to check for surfaces, and move the suggested target onto them if any found
         RaycastHit hitInfo;
         if (Physics.Raycast(SuggestedTarget.position + new Vector3(0, 100, 0), Vector3.down, out hitInfo, 500))
         {
@@ -56,20 +38,19 @@ public class Leg : MonoBehaviour
         float dist = (SuggestedTarget.position - IK.Target.position).magnitude;
         if (dist > StepDist && stepInterpolator >= 1 && OppositeLeg.stepInterpolator >= 1)
         {
-            HandleStep();
+            BeginStep();
         }
 
-        // If currentlyStepping
+        // If currently stepping, smoothly move IK target to intended target
         if (stepInterpolator < 1)
         {
-            // Smoothly move target to intended target
             IK.Target.position = Vector3.Lerp(prevPos, SuggestedTarget.position, Cubic.InOut(stepInterpolator));
             IK.Target.rotation = Quaternion.Lerp(prevRot, SuggestedTarget.rotation, Cubic.InOut(stepInterpolator));
         }
     }
 
-    // "Take a step" by updating the current solver and history positions/rotations
-    public void HandleStep()
+    // Allow the leg to "take a step" by resetting the step interpolator and storing the IK's current position/rotation
+    public void BeginStep()
     {
         stepInterpolator = 0;
         prevPos = IK.Target.position;

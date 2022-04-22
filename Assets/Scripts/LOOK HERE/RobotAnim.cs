@@ -9,17 +9,19 @@ public class RobotAnim : MonoBehaviour
 
     float offset;
 
+    // Store the current y position of the body relative to the feet as the offset
     private void Start()
     {
-        offset = transform.position.y - AverageY();
+        
     }
 
+    // Move to the average y position of the legs, plus an offset
     private void LateUpdate()
     {
-        transform.position += Vector3.up * (offset + AverageY() - transform.position.y);
-        // transform.position += Vector3.up * (-transform.position.y) + Vector3.up * (offset + AverageY());
+        
     }
 
+    // Returns the average y position of all foot transforms
     float AverageY()
     {
         float avg = 0;
